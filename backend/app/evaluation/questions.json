@@ -1,0 +1,17 @@
+[
+ {"question":"How do I install this project?","expected_refuse":false,"category":"installation"},
+ {"question":"What are the testing commands?","expected_refuse":false,"category":"testing"},
+ {"question":"How do I submit a pull request?","expected_refuse":false,"category":"pr"},
+ {"question":"What is the project structure?","expected_refuse":false,"category":"structure"},
+ {"question":"What coding standards apply?","expected_refuse":false,"category":"standards"},
+ {"question":"How do I create a branch?","expected_refuse":false,"category":"git"},
+ {"question":"What is the license?","expected_refuse":false,"category":"policy"},
+ {"question":"How to run the app?","expected_refuse":false,"category":"setup"},
+ {"question":"Who is the CEO of this company?","expected_refuse":true,"category":"absent"},
+ {"question":"What is the stock price?","expected_refuse":true,"category":"absent"},
+ {"question":"How to deploy to AWS Lambda?","expected_refuse":true,"category":"absent"},
+ {"question":"What database does it use in production?","expected_refuse":true,"category":"absent"},
+ {"question":"Tell me a joke","expected_refuse":true,"category":"absent"},
+ {"question":"What is the meaning of life?","expected_refuse":true,"category":"absent"},
+ {"question":"How to configure Kubernetes?","expected_refuse":true,"category":"absent"}
+]

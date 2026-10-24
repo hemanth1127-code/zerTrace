@@ -1,0 +1,44 @@
+CONTRIBUTION GUIDE - Quick Reference
+
+GETTING STARTED
+1. Fork the repository on GitHub
+2. Clone your fork locally
+3. Install dependencies (npm install / pip install -r requirements.txt)
+4. Create a feature branch: git checkout -b feature/my-feature
+
+MAKING CHANGES
+- Follow existing code style
+- Run linters before committing
+- Write tests for new features
+- Update documentation
+
+COMMIT MESSAGES
+- Use conventional commits: feat:, fix:, docs:, refactor:
+- Keep messages clear and descriptive
+- Reference issue numbers: "fixes #123"
+
+PULL REQUEST PROCESS
+1. Push branch to your fork
+2. Open PR against main repository
+3. Fill out PR template completely
+4. Request review from maintainers
+5. Address feedback promptly
+6. Ensure CI passes
+
+CODE REVIEW GUIDELINES
+- Be constructive and respectful
+- Focus on code, not the person
+- Suggest improvements, don't just criticize
+- Approve when ready, request changes when needed
+
+COMMUNITY STANDARDS
+- Follow code of conduct
+- Welcome newcomers
+- Help others learn
+- Celebrate all contributions
+
+RESOURCES
+- Documentation: docs/
+- Issues: GitHub Issues
+- Discussions: GitHub Discussions
+- Chat: Discord #contributors
