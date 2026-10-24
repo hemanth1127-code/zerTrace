@@ -1,91 +1,74 @@
-# zerTrace / ContribGuide AI
+# zerTrace
 
-A full-stack AI assistant built to help new contributors understand open-source projects, onboarding docs, and contribution guides. The project combines a FastAPI backend, a React frontend, and a retrieval-augmented generation (RAG) pipeline that answers questions from uploaded documentation while grounding the response in source excerpts.
+zerTrace is an AI-powered contributor assistant that helps developers and newcomers understand open-source repositories, onboarding docs, and contribution guides using a document-grounded RAG workflow.
 
-This repository is designed for the following use case:
-- A contributor uploads project docs or contribution guides
-- The app chunks and indexes the content
-- The system retrieves the most relevant sections for a user question
-- A language model generates a beginner-friendly answer with citations
-- The frontend shows the answer and source references in a chat-like interface
+The application allows users to upload documentation, ask questions in natural language, and receive beginner-friendly answers backed by relevant source excerpts from the uploaded material.
 
 ---
 
-## Why this project exists
+## Overview
 
-New contributors often struggle to find the right place to start in large open-source repositories. Documentation is usually scattered across README files, contribution guides, setup instructions, and project-specific notes. This project reduces that friction by turning documentation into a searchable, guided knowledge assistant.
+When working with large open-source projects, new contributors often struggle to find the right documentation, understand the project structure, and determine where to begin. zerTrace solves this by turning project docs into a searchable knowledge base.
 
-Instead of forcing contributors to read long documents manually, the app helps them ask specific questions such as:
-- Where should I start contributing?
-- How do I set up the project locally?
-- What is the expected contribution workflow?
-- Which docs explain the repo architecture or contribution process?
+Users can:
+- upload contribution guides, READMEs, or documentation files
+- ask questions such as "How do I start contributing?"
+- receive a grounded answer based on the uploaded material
+- inspect the source sections that informed the response
 
 ---
 
-## Project overview
+## Problem it solves
 
-The system has two main layers:
+Open-source repositories usually contain scattered knowledge across:
+- README files
+- contribution guides
+- setup instructions
+- architecture notes
+- issue templates and governance docs
 
-1. Backend (Python + FastAPI)
-   - Handles document upload and indexing
-   - Stores chunks in a vector database
-   - Retrieves relevant content using hybrid search
-   - Calls the LLM to generate answers grounded in document evidence
+This project makes that information accessible through a conversational interface, reducing the time needed to understand a project before contributing.
 
-2. Frontend (React + Vite)
-   - Uploads documents
-   - Lets users ask questions in a chat interface
-   - Displays AI responses and source snippets
+---
+
+## Key features
+
+- Intelligent document ingestion for PDF, Markdown, and text files
+- Text chunking and indexing for retrieval
+- Embedding-based semantic search
+- Keyword + vector hybrid retrieval
+- Relevance filtering before answer generation
+- LLM-based answer generation grounded in retrieved evidence
+- Citation tracking to source documents
+- Modern web frontend for file upload and Q&A
+- Lightweight local development setup
 
 ---
 
 ## Architecture
 
-The repository follows a lightweight RAG architecture:
+The repository follows a simple but effective RAG pipeline:
+
+1. User uploads a document
+2. Backend stores the file locally
+3. Content is extracted and cleaned
+4. Text is split into chunks
+5. Chunks are embedded and stored in ChromaDB
+6. User asks a question
+7. Backend retrieves the best matching chunks
+8. A model generates an answer using only the relevant evidence
+9. The frontend presents the answer and sources
+
+### High-level flow
 
 Client (React UI)
-  -> FastAPI endpoints
-      -> Document loader / chunker
-      -> Embedding generation
-      -> Chroma vector store
-      -> Hybrid retrieval (keyword + semantic)
-      -> Relevance filter
+  -> FastAPI backend
+      -> document loader and chunker
+      -> embeddings + vector store
+      -> hybrid retrieval
+      -> relevance check
       -> LLM answer generation
-      -> Citations and evidence returned to UI
-
-Core logic flow:
-- Uploaded files are validated (.pdf, .md, .txt)
-- Text is extracted and cleaned
-- The content is split into chunks
-- Each chunk gets an embedding
-- Relevant chunks are retrieved using query embedding and keyword matching
-- The app generates a response using only relevant context
-- Citations are checked to ensure the answer stays grounded in document evidence
-
----
-
-## Tech stack
-
-Backend
-- Python 3.10+
-- FastAPI
-- ChromaDB
-- sentence-transformers / embeddings
-- Google Gemini / Gemma-based inference
-- Pydantic settings
-- pytest
-
-Frontend
-- React
-- TypeScript
-- Vite
-- CSS-in-JS styling
-
-Additional components
-- PDF/text document parsing
-- Hybrid retrieval using vector + keyword search
-- Local file storage for uploads
+      -> citations returned to frontend
 
 ---
 
@@ -126,7 +109,6 @@ zerTrace/
 │       │   ├── reranker.py
 │       │   └── vector_store.py
 │       └── services/
-│           └── ...
 ├── frontend/
 │   ├── index.html
 │   ├── netlify.toml
@@ -140,209 +122,76 @@ zerTrace/
 
 ---
 
-## Backend details
+## Tech stack
 
-### API entry point
-The backend is launched via `backend/app/main.py`.
+### Backend
+- Python
+- FastAPI
+- ChromaDB
+- Pydantic Settings
+- sentence-transformers / embedding models
+- Gemini / Gemma-style model integration
+- pytest
 
-Main endpoints:
-- `/api/health` - health check for backend and vector store status
-- `/api/documents/upload` - upload and index a `.pdf`, `.md`, or `.txt` file
-- `/api/documents` - list indexed docs metadata
-- `/api/documents/{doc_id}` - delete a document by source name
-- `/api/chat` - ask a question against indexed docs
-- `/api/onboarding` - return onboarding guidance steps
-- `/api/evaluation` - evaluation-related endpoints
-
-### Config
-The backend uses environment variables defined in `backend/.env.example` and loaded from `.env` through `pydantic-settings`.
-
-Key settings:
-- `GOOGLE_API_KEY` - required for model access
-- `GEMMA_MODEL` - selected model for generation
-- `EMBEDDING_MODEL` - embedding model for document/query encoding
-- `CHROMA_PERSIST_DIRECTORY` - vector database storage path
-- `UPLOAD_DIRECTORY` - local location for uploaded files
-- `CHUNK_SIZE` and `CHUNK_OVERLAP` - splitting configuration
-- `TOP_K` - number of relevant chunks to retrieve
-- `RELEVANCE_THRESHOLD` - cutoff for answer eligibility
-- `FRONTEND_ORIGIN` - CORS origin for frontend access
+### Frontend
+- React
+- TypeScript
+- Vite
+- CSS-in-JS styling
 
 ---
 
-## Frontend details
+## Backend modules
 
-The frontend is a single-page React app built with Vite.
+### API layer
+The backend is registered in `backend/app/main.py` and contains the main API routes.
 
-Main UI behavior:
-- Choose a file and upload documentation
-- Ask open questions to the AI assistant
-- Get answer and source references
-- Ask onboarding questions like "Where do I start?"
-- Toggle between light and dark mode
+Core routes:
+- `/api/health` – health check and backend status
+- `/api/documents/upload` – upload and index documents
+- `/api/documents` – list indexed docs
+- `/api/documents/{doc_id}` – delete a document
+- `/api/chat` – ask a question about indexed content
+- `/api/onboarding` – provide contributor guidance
+- `/api/evaluation` – evaluation endpoints
 
-The app calls the backend at `http://localhost:8000` by default.
+### RAG pipeline
+The retrieval and answer generation flow is implemented under `backend/app/rag/`:
 
----
-
-## Detailed workflow
-
-### 1. Setup and environment preparation
-Before running the app:
-- Create a Python virtual environment for the backend
-- Install backend requirements
-- Create `.env` from `.env.example`
-- Add your Google API key
-- Install frontend dependencies
-
-### 2. Start backend
-Run:
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-# set GOOGLE_API_KEY in .env
-uvicorn app.main:app --reload --port 8000
-```
-
-This starts the FastAPI API server.
-
-### 3. Start frontend
-Run in a second terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-The frontend becomes available via the Vite dev server, usually on:
-- `http://localhost:5173`
-
-### 4. Upload documentation
-From the UI:
-- Select a file (`.pdf`, `.md`, or `.txt`)
-- Click "Upload Doc"
-
-The backend performs the following:
-- saves the file under `backend/data/uploads`
-- validates the size and extension
-- loads and extracts text
-- splits the text into chunks
-- embeds the chunks
-- inserts them into ChromaDB
-
-### 5. Ask a question
-The frontend sends a POST request to:
-
-```http
-POST /api/chat
-```
-
-with a payload such as:
-
-```json
-{
-  "question": "How do I get started contributing to this project?",
-  "mode": "hybrid",
-  "top_k": 5
-}
-```
-
-### 6. Backend retrieval and generation
-The backend does the following:
-- embeds the incoming question
-- retrieves candidate chunks from the vector store
-- performs keyword-based matching for better recall
-- applies a relevance gate to decide if the evidence is strong enough
-- sends the filtered evidence to the LLM
-- validates that generated citations are consistent with retrieved chunks
-- returns the final answer and citations to the UI
-
-### 7. Response shown to the user
-The frontend displays:
-- the AI answer text
-- the relevant source names
-- the retrieved document evidence (if available)
+- `loader.py` – loads documents and normalizes text
+- `chunker.py` – splits document text into chunks
+- `embeddings.py` – creates embeddings for queries and documents
+- `vector_store.py` – stores and queries vector data in Chroma
+- `keyword_retriever.py` – performs keyword-based matching
+- `hybrid_retriever.py` – combines recall from both semantic and keyword searches
+- `relevance_gate.py` – filters weak or irrelevant matches
+- `generator.py` – produces the final model output
+- `citations.py` – validates citations against source chunks
+- `pipeline.py` – orchestrates the entire retrieval-generation flow
 
 ---
 
-## RAG pipeline internals
+## Frontend experience
 
-The retrieval pipeline is spread across several modules:
+The frontend is a chat-style application built with React and Vite.
 
-- `loader.py` - loads document content and normalizes text
-- `chunker.py` - splits documents into manageable chunks
-- `embeddings.py` - converts text into embeddings
-- `vector_store.py` - manages ChromaDB indexing and retrieval
-- `keyword_retriever.py` - supports keyword-based retrieval
-- `hybrid_retriever.py` - combines semantic and lexical search
-- `relevance_gate.py` - checks whether retrieved content is relevant enough
-- `generator.py` - builds the final answer from retrieved context
-- `citations.py` - ensures answer claims map to valid evidence
-- `pipeline.py` - orchestrates the end-to-end retrieval and generation flow
+It enables users to:
+- select a file for upload
+- send natural-language questions
+- get AI-generated answers
+- view references and evidence
+- trigger starter guidance for onboarding questions
+- switch between light and dark mode
 
-This is a classic RAG approach:
-- retrieval: find the most relevant documentation segments
-- grounding: use only retrieved evidence
-- generation: write answer based on that context
-- verification: confirm citations map back to the source material
+The frontend communicates with the backend at `http://localhost:8000` by default.
 
 ---
 
-## Example flow
+## Environment configuration
 
-A typical user session looks like this:
+The backend configuration is managed through `backend/app/config.py` and the example environment file `backend/.env.example`.
 
-1. User uploads `CONTRIBUTING.md`
-2. Backend extracts and chunks the file
-3. Chunks are embedded and saved in the database
-4. User asks: "Which files should I inspect before opening a PR?"
-5. The app searches relevant chunks
-6. The model answers using the retrieved sections from the docs
-7. The frontend shows the answer with source references
-
----
-
-## Local development commands
-
-Backend
-
-```bash
-cd backend
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --reload --port 8000
-```
-
-Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Tests
-
-```bash
-cd backend
-pytest
-```
-
-Build frontend
-
-```bash
-cd frontend
-npm run build
-```
-
----
-
-## Common environment variables
+Example variables:
 
 ```env
 GOOGLE_API_KEY=
@@ -360,59 +209,123 @@ FRONTEND_ORIGIN=http://localhost:5173
 
 ---
 
-## Deployment thoughts
+## Local setup
 
-This project is currently structured for local development and demo usage. In production, a typical deployment pattern would be:
+### 1. Clone the repository
 
-- Frontend: static hosting such as Netlify or Vercel
-- Backend: FastAPI service hosted on Render, Railway, Azure, or a Docker container
-- Vector DB: persistent Chroma storage or managed equivalent
-- Secrets: store `GOOGLE_API_KEY` in a secure environment system
-- File uploads: persist to object storage or a dedicated uploads service in production
+```bash
+git clone https://github.com/hemanth1127-code/zerTrace.git
+cd zerTrace
+```
 
----
+### 2. Start the backend
 
-## Troubleshooting
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# set GOOGLE_API_KEY in .env
+uvicorn app.main:app --reload --port 8000
+```
 
-### Backend fails to start
-- Check that `.env` exists in `backend/`
-- Confirm your `GOOGLE_API_KEY` is set
-- Install all Python dependencies from `requirements.txt`
+### 3. Start the frontend
 
-### Frontend cannot call backend
-- Ensure the backend is running on port `8000`
-- Confirm the API origin is allowed by CORS
-- Verify `FRONTEND_ORIGIN` matches the frontend address
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### No results found
-- Upload a valid `.md`, `.txt`, or `.pdf` file
-- Keep files small enough under the configured upload limit
-- Check that indexing completed successfully from the backend response
-
-### LLM answer unavailable
-- Validate your model credentials and access to the selected provider
-- Ensure the selected model is supported and available
-- Check the logs for generation errors or missing dependencies
+The frontend typically runs at:
+- `http://localhost:5173`
 
 ---
 
-## Future improvements
+## Typical workflow
 
-Potential next steps for the project:
-- support more file formats such as DOCX and HTML
-- add user authentication and per-user document storage
-- improve citation quality and answer validation
-- add vector database scaling and indexing performance tuning
-- support multi-project onboarding and repo metadata extraction
-- integrate GitHub API to analyze repositories and provide context-aware suggestions
+1. Open the frontend in the browser
+2. Upload a project guide or contribution document
+3. Wait for the backend to process the file and index it
+4. Ask a question like:
+   - "How do I start contributing?"
+   - "Which files should I inspect before creating a PR?"
+   - "What is the expected contribution workflow?"
+5. The backend retrieves the relevant document chunks
+6. The model generates a concise and grounded answer
+7. The UI displays the answer and source references
+
+---
+
+## Example request flow
+
+### Chat request
+
+```json
+{
+  "question": "How should a beginner contribute to this project?",
+  "mode": "hybrid",
+  "top_k": 5
+}
+```
+
+### Backend behavior
+- embed the question
+- search the vector store
+- combine with keyword retrieval
+- run relevance checks
+- generate a response using the best evidence
+- return citations and the answer payload
+
+---
+
+## Why this project is useful
+
+zerTrace is especially useful for:
+- onboarding new contributors
+- helping first-time developers understand docs faster
+- turning static documentation into interactive knowledge
+- building internal contributor assistant tools for open-source repositories
+
+---
+
+## Potential improvements
+
+Some natural next steps include:
+- support for more file types like DOCX, HTML, and PPTX
+- multi-user / per-project indexing
+- GitHub repository metadata integration
+- stronger citation validation
+- persistent deployment setup for production use
+- authentication and user-specific document libraries
+
+---
+
+## Testing
+
+The backend includes a test folder and can be run with:
+
+```bash
+cd backend
+pytest
+```
+
+---
+
+## Deployment considerations
+
+This project is set up for local development and demonstration, but it can be adapted for production with:
+- frontend hosting on Netlify or Vercel
+- backend deployment on Render, Railway, Azure, or Docker
+- secure environment management for API keys
+- persistent storage for uploaded documents and Chroma data
 
 ---
 
 ## Summary
 
-zerTrace is a practical RAG-based contribution assistant that helps users navigate project documentation using AI. It combines document ingestion, semantic search, hybrid retrieval, and LLM answer generation to create a user-friendly onboarding experience for first-time contributors.
-
-The project is intentionally lightweight and easy to run locally, making it suitable for demos, experimentation, and extension into a larger open-source contributor support platform.
+zerTrace combines a modern frontend, FastAPI backend, and retrieval-augmented generation pipeline to help users understand project documentation and contributions more efficiently. It is a practical AI assistant for onboarding, documentation navigation, and contributor support in open-source environments.
 
 ---
 
@@ -434,4 +347,10 @@ npm install
 npm run dev
 ```
 
-Then open the frontend in the browser and upload your documentation.
+Then open the frontend and upload a guide or project document to start asking questions.
+
+---
+
+## Project link
+
+- GitHub: https://github.com/hemanth1127-code/zerTrace
